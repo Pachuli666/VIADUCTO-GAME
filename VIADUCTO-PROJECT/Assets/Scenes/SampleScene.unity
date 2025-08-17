@@ -407,8 +407,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.07786859, y: -0.000000023442961, z: 0.000000018401252, w: 0.9969637}
-  m_LocalPosition: {x: 0, y: 46.100933, z: 14.71386}
+  m_LocalRotation: {x: -0.11827071, y: 0.22969194, z: -0.16392392, w: 0.9520413}
+  m_LocalPosition: {x: -3.22, y: 46.01996, z: 14.788311}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -972,8 +972,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1517156648}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.07786867, y: -0.00000002344296, z: 0.000000018401247, w: 0.9969637}
-  m_LocalPosition: {x: 0, y: 46.100933, z: 14.71386}
+  m_LocalRotation: {x: -0.11827071, y: 0.22969192, z: -0.1639239, w: 0.9520413}
+  m_LocalPosition: {x: -3.22, y: 46.01996, z: 14.788311}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1020,7 +1020,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b5d7c088409d9a40b7b09aa707777f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetOffset: {x: 0, y: 3.33, z: 0}
+  TargetOffset: {x: -3.22, y: 3.22, z: 0}
   TrackerSettings:
     BindingMode: 0
     PositionDamping: {x: 1, y: 1, z: 1}
