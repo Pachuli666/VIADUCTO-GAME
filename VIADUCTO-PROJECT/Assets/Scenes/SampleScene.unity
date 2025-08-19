@@ -408,7 +408,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27794883, y: 0, z: 0, w: 0.9605959}
-  m_LocalPosition: {x: 0, y: 2.88, z: -4.55}
+  m_LocalPosition: {x: 0, y: 3.38, z: -5.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -702,10 +702,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 1006582024}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8fb83a7fbd0acf4c996a51726fcb823, type: 3}
+  m_Script: {fileID: 11500000, guid: ef657d12b62734443aee02f31699babc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerSpeed: 5
+  routePoints:
+  - {x: 40, y: 0, z: 40}
+  - {x: -40, y: 0, z: 40}
+  - {x: -40, y: 0, z: -50}
+  startSpeed: 1
+  speedIncrease: 3
+  brakingForce: 5
+  stopDistance: 5
+  rotationSpeed: 5
+  turnRadius: 15
+  maxTurnAngle: 45
 --- !u!1 &1267223171
 GameObject:
   m_ObjectHideFlags: 0
@@ -855,7 +865,6 @@ GameObject:
   - component: {fileID: 1517156653}
   - component: {fileID: 1517156656}
   - component: {fileID: 1517156657}
-  - component: {fileID: 1517156649}
   m_Layer: 0
   m_Name: PLAYER Camera
   m_TagString: Untagged
@@ -863,25 +872,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1517156649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1517156648}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 89875cdc57c54474a8a74efd9b2a3b5d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ScanRecursively: 1
-  SuppressInputWhileBlending: 1
-  IgnoreTimeScale: 0
-  m_ControllerManager:
-    Controllers: []
-  PlayerIndex: -1
-  AutoEnableInputs: 1
 --- !u!114 &1517156653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -902,7 +892,7 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 1006582025}
+    TrackingTarget: {fileID: 23280465}
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:
@@ -934,7 +924,7 @@ Transform:
   m_GameObject: {fileID: 1517156648}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27794883, y: 0, z: 0, w: 0.9605959}
-  m_LocalPosition: {x: 0, y: 2.88, z: -4.55}
+  m_LocalPosition: {x: 0, y: 3.38, z: -5.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
