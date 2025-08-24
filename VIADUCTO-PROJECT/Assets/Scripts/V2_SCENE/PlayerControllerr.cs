@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
         currentSpeed = baseSpeed;
 
         // Fijar rotación inicial
-        transform.rotation = Quaternion.identity;
+        //transform.rotation = Quaternion.identity;
 
         // Calcular límites basados en el plano
         if (roadPlane != null)
@@ -65,6 +65,6 @@ public class PlayerController : MonoBehaviour
         transform.position = pos;
 
         // Mantener rotación fija
-        transform.rotation = Quaternion.identity;
+        //transform.rotation = Quaternion.identity;
     }
 }
