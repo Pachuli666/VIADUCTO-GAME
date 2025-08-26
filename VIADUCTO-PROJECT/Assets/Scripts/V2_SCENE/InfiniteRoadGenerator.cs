@@ -13,6 +13,7 @@ public class InfiniteRoadGenerator : MonoBehaviour
     [SerializeField] private float laneWidth = 3f; // Ancho de cada carril
     [SerializeField] private int maxObstaclesPerSegment = 2; // Máximo obstáculos por segmento
     [SerializeField] private float obstacleSafeDistance = 8f; // Distancia segura del jugador
+    [SerializeField] private float minObstacleSpacing = 2f; // Separación mínima entre obstáculos en X
 
     private float segmentLength;
     private float triggerDistance;
@@ -44,24 +45,32 @@ public class InfiniteRoadGenerator : MonoBehaviour
 
     private void InitializeRoadSystem()
     {
-        // Calcular dimensiones del segmento
-        MeshRenderer thisRenderer = GetComponent<MeshRenderer>();
-        if (thisRenderer != null)
+        // Calcular dimensiones del segmento creando una instancia temporal
+        if (roadPrefab != null)
         {
-            segmentLength = thisRenderer.bounds.size.x;
-            float rightEdge = thisRenderer.bounds.max.x;
-            nextSpawnPosition = new Vector3(
-                rightEdge + (segmentLength * 0.5f),
-                transform.position.y,
-                transform.position.z
-            );
+            // Crear instancia temporal para obtener el tamaño real
+            GameObject tempSegment = Instantiate(roadPrefab, Vector3.zero, roadPrefab.transform.rotation);
+            MeshRenderer tempRenderer = tempSegment.GetComponent<MeshRenderer>();
+
+            if (tempRenderer != null)
+            {
+                segmentLength = tempRenderer.bounds.size.x;
+            }
+            else
+            {
+                segmentLength = 10f * roadPrefab.transform.localScale.x;
+            }
+
+            // Destruir la instancia temporal
+            DestroyImmediate(tempSegment);
         }
         else
         {
-            segmentLength = 10f * transform.localScale.x;
-            nextSpawnPosition = transform.position + Vector3.right * segmentLength;
+            segmentLength = 10f;
         }
 
+        // Establecer posición inicial
+        nextSpawnPosition = transform.position;
         triggerDistance = segmentLength * 1.5f;
 
         // Generar segmentos iniciales
@@ -113,15 +122,34 @@ public class InfiniteRoadGenerator : MonoBehaviour
     {
         if (roadPrefab == null) return;
 
-        // Calcular posición del nuevo segmento
+        // Calcular posición del nuevo segmento correctamente
         if (roadSegments.Count > 0)
         {
             GameObject lastSegment = roadSegments[roadSegments.Count - 1];
-            nextSpawnPosition = new Vector3(
-                lastSegment.transform.position.x + segmentLength,
-                lastSegment.transform.position.y,
-                lastSegment.transform.position.z
-            );
+
+            // Obtener el renderer del último segmento instanciado
+            MeshRenderer lastRenderer = lastSegment.GetComponent<MeshRenderer>();
+            if (lastRenderer != null)
+            {
+                // Usar los bounds reales del objeto instanciado
+                float lastSegmentRightEdge = lastRenderer.bounds.max.x;
+
+                // El nuevo segmento debe colocarse exactamente donde termina el anterior
+                nextSpawnPosition = new Vector3(
+                    lastSegmentRightEdge + (segmentLength * 0.5f),
+                    lastSegment.transform.position.y,
+                    lastSegment.transform.position.z
+                );
+            }
+            else
+            {
+                // Fallback si no hay MeshRenderer
+                nextSpawnPosition = new Vector3(
+                    lastSegment.transform.position.x + segmentLength,
+                    lastSegment.transform.position.y,
+                    lastSegment.transform.position.z
+                );
+            }
         }
 
         // Crear nuevo segmento
@@ -154,21 +182,22 @@ public class InfiniteRoadGenerator : MonoBehaviour
             return obstacles; // No generar obstáculos si está muy cerca del jugador
         }
 
-        // Generar número aleatorio de obstáculos (0 a maxObstaclesPerSegment)
-        int numObstacles = Random.Range(0, maxObstaclesPerSegment + 1);
+        // Generar número aleatorio de obstáculos (1 a maxObstaclesPerSegment)
+        // Cambiar de 0 a 1 para garantizar al menos un obstáculo por segmento
+        int numObstacles = Random.Range(1, maxObstaclesPerSegment + 1);
 
-        // Si no hay obstáculos, retornar lista vacía
-        if (numObstacles == 0) return obstacles;
-
-        // Lista para rastrear carriles ocupados
-        List<int> occupiedLanes = new List<int>();
+        // Lista para rastrear posiciones ocupadas (con posición X y carril)
+        List<Vector3> occupiedPositions = new List<Vector3>();
 
         for (int i = 0; i < numObstacles; i++)
         {
-            Vector3 obstaclePosition = GetRandomObstaclePosition(segmentPosition, occupiedLanes);
+            Vector3 obstaclePosition = GetRandomObstaclePosition(segmentPosition, occupiedPositions);
 
             if (obstaclePosition != Vector3.zero) // Posición válida encontrada
             {
+                // Agregar la posición a las ocupadas
+                occupiedPositions.Add(obstaclePosition);
+
                 // Seleccionar prefab aleatorio de obstáculo
                 GameObject obstaclePrefab = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
 
@@ -191,32 +220,20 @@ public class InfiniteRoadGenerator : MonoBehaviour
         return obstacles;
     }
 
-    private Vector3 GetRandomObstaclePosition(Vector3 segmentCenter, List<int> occupiedLanes)
+    private Vector3 GetRandomObstaclePosition(Vector3 segmentCenter, List<Vector3> occupiedPositions)
     {
-        int attempts = 10; // Máximo número de intentos
+        int maxAttempts = 20; // Incrementar intentos
 
-        for (int attempt = 0; attempt < attempts; attempt++)
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            // Seleccionar carril aleatorio que no esté ocupado
-            List<int> availableLanes = new List<int>();
-            for (int i = 0; i < 3; i++)
-            {
-                if (!occupiedLanes.Contains(i))
-                {
-                    availableLanes.Add(i);
-                }
-            }
-
-            // Si no hay carriles disponibles, salir
-            if (availableLanes.Count == 0) break;
-
-            int laneIndex = availableLanes[Random.Range(0, availableLanes.Count)];
+            // Seleccionar carril aleatorio
+            int laneIndex = Random.Range(0, 3);
             float laneZ = segmentCenter.z + lanePositions[laneIndex];
 
-            // Posición X más centrada en el segmento para mejor distribución
+            // Generar posición X aleatoria dentro del segmento
             float randomX = Random.Range(
-                segmentCenter.x - segmentLength * 0.25f,
-                segmentCenter.x + segmentLength * 0.25f
+                segmentCenter.x - segmentLength * 0.4f,
+                segmentCenter.x + segmentLength * 0.4f
             );
 
             Vector3 potentialPosition = new Vector3(
@@ -226,10 +243,36 @@ public class InfiniteRoadGenerator : MonoBehaviour
             );
 
             // Verificar si está muy cerca del jugador
-            if (!IsPositionNearPlayer(potentialPosition))
+            if (IsPositionNearPlayer(potentialPosition))
             {
-                // Marcar carril como ocupado
-                occupiedLanes.Add(laneIndex);
+                continue;
+            }
+
+            // Verificar si está muy cerca de otros obstáculos
+            bool tooClose = false;
+            foreach (Vector3 occupiedPos in occupiedPositions)
+            {
+                float distance = Vector3.Distance(potentialPosition, occupiedPos);
+
+                // Si están en el mismo carril, necesitan más separación en X
+                if (Mathf.Approximately(occupiedPos.z, potentialPosition.z))
+                {
+                    if (Mathf.Abs(occupiedPos.x - potentialPosition.x) < minObstacleSpacing)
+                    {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                // Si están en carriles diferentes pero muy cerca en X, también evitar
+                else if (Mathf.Abs(occupiedPos.x - potentialPosition.x) < minObstacleSpacing * 0.5f)
+                {
+                    tooClose = true;
+                    break;
+                }
+            }
+
+            if (!tooClose)
+            {
                 return potentialPosition;
             }
         }
@@ -248,15 +291,11 @@ public class InfiniteRoadGenerator : MonoBehaviour
     // Método público para obtener información de debug
     public void GetDebugInfo()
     {
-        Debug.Log($"Segmentos activos: {roadSegments.Count}");
-        Debug.Log($"Longitud de segmento: {segmentLength}");
-
         int totalObstacles = 0;
         foreach (var obstacleList in obstaclesPerSegment)
         {
             totalObstacles += obstacleList.Count;
         }
-        Debug.Log($"Total de obstáculos activos: {totalObstacles}");
     }
 
     // Método para cambiar dificultad dinámicamente
