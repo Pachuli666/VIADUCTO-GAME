@@ -238,7 +238,7 @@ public class InfiniteRoadGenerator : MonoBehaviour
 
             Vector3 potentialPosition = new Vector3(
                 randomX,
-                segmentCenter.y + 0.5f, // Elevar sobre el plano
+                segmentCenter.y + 0.22f, // Elevar sobre el plano
                 laneZ
             );
 
