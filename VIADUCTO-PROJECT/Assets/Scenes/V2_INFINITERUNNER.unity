@@ -234,7 +234,7 @@ MonoBehaviour:
   - {fileID: 803428272589916860, guid: 415e840fcb9cd2a42bf099d601945c80, type: 3}
   - {fileID: 9144800497275750075, guid: f4239dbc62b0ddc4eb20e2db59e6d2a0, type: 3}
   laneWidth: 3
-  maxObstaclesPerSegment: 6
+  maxObstaclesPerSegment: 10
   obstacleSafeDistance: 3
   minObstacleSpacing: 3
 --- !u!1 &329992632
@@ -285,8 +285,8 @@ MonoBehaviour:
   acceleration: 1.5
   maxSpeed: 10
   sideSpeed: 5
-  brakeForce: 15
-  minSpeed: 0.5
+  brakeForce: 6
+  minSpeed: 3
   roadPlane: {fileID: 1931750951}
 --- !u!1 &491414168
 GameObject:

@@ -4,8 +4,8 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float acceleration = 8f;         // Aceleración automática
-    public float maxSpeed = 10f;
-    public float sideSpeed = 8f;
+    public float maxSpeed = 20f;
+    public float sideSpeed = 10f;
 
     [Header("Braking Settings")]
     public float brakeForce = 15f;           // Fuerza de frenado
