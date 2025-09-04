@@ -11,16 +11,16 @@ public class InfiniteRoadGenerator : MonoBehaviour
 
     // Configuracion de obstaculos
     [Header("Obstacle Configuration")]
-    [SerializeField] private GameObject[] obstaclePrefabs; // Array de prefabs de obstaculos
     [SerializeField] private float laneWidth = 3f; // Ancho entre carriles
     [SerializeField] private int maxObstaclesPerSegment = 2; // Maximo obstaculos por segmento
     [SerializeField] private float obstacleSafeDistance = 8f; // Distancia segura del jugador
     [SerializeField] private float minObstacleSpacing = 2f; // Espaciado minimo entre obstaculos
+    [SerializeField] private GameObject[] obstaclePrefabs; // Array de prefabs de obstaculos
 
     // Configuracion de paradas de autobus
     [Header("Bus Stop Configuration")]
     [SerializeField] private GameObject busStopPrefab; // Prefab de la parada
-    [SerializeField, Range(0f, 1f)] private float busStopFrequency = 0.3f; // Probabilidad por segmento
+    [SerializeField] private int busStopInterval = 5; // Cada cuantos segmentos generar parada
     [SerializeField] private float busStopOffsetZ = 4f; // Distancia lateral del centro
     [SerializeField] private float busStopSafeDistance = 10f; // Distancia segura del jugador
 
@@ -33,6 +33,9 @@ public class InfiniteRoadGenerator : MonoBehaviour
     private List<GameObject> busStopsPerSegment = new List<GameObject>(); // Paradas por segmento
     private Vector3 nextSpawnPosition; // Posicion del proximo segmento
     private int segmentCount = 0; // Contador de segmentos generados
+
+    // Variables para controlar el spawning de paradas
+    private bool lastBusStopOnLeft = false; // Ultimo lado donde se coloco una parada
 
     // Posiciones de los 3 carriles izquierda centro derecha
     private float[] lanePositions = new float[3];
@@ -222,14 +225,17 @@ public class InfiniteRoadGenerator : MonoBehaviour
         // No generar si no hay prefab
         if (busStopPrefab == null) return null;
 
-        // Usa probabilidad para decidir si generar parada
-        if (Random.value > busStopFrequency) return null;
+        // Solo generar parada cada 'busStopInterval' segmentos
+        if (segmentCount % busStopInterval != 0) return null;
 
         // No generar si esta muy cerca del jugador
         if (IsPositionNearPlayer(segmentPosition, busStopSafeDistance)) return null;
 
-        // Decide aleatoriamente el lado izquierdo o derecho
-        bool spawnOnLeft = Random.value > 0.5f;
+        // Determinar en que lado colocar la parada (alternando)
+        bool spawnOnLeft = !lastBusStopOnLeft;
+
+        // Actualizar el registro del ultimo lado usado
+        lastBusStopOnLeft = spawnOnLeft;
 
         // Calcula la posicion Z lateral
         float busStopZ = segmentPosition.z + (spawnOnLeft ? -busStopOffsetZ : busStopOffsetZ);
@@ -253,13 +259,15 @@ public class InfiniteRoadGenerator : MonoBehaviour
 
         // Crea la parada
         GameObject newBusStop = Instantiate(busStopPrefab, busStopPosition, busStopRotation);
-        newBusStop.name = $"BusStop_Segment_{roadSegments.Count}";
+        newBusStop.name = $"BusStop_Segment_{segmentCount}_{(spawnOnLeft ? "Left" : "Right")}";
 
         // Agrega colisionador si no tiene
         if (newBusStop.GetComponent<Collider>() == null)
         {
             newBusStop.AddComponent<BoxCollider>().isTrigger = true;
         }
+
+        Debug.Log($"Bus stop generated at segment {segmentCount} on {(spawnOnLeft ? "RIGHT" : "LEFT")} side");
 
         return newBusStop;
     }
@@ -425,27 +433,6 @@ public class InfiniteRoadGenerator : MonoBehaviour
         return IsPositionNearPlayer(position, obstacleSafeDistance);
     }
 
-    // Metodo publico para obtener informacion de debug
-    public void GetDebugInfo()
-    {
-        int totalObstacles = 0;
-        // Cuenta todos los obstaculos en todos los segmentos
-        foreach (var obstacleList in obstaclesPerSegment)
-        {
-            totalObstacles += obstacleList.Count;
-        }
-
-        int totalBusStops = 0;
-        // Cuenta todas las paradas activas
-        foreach (var busStop in busStopsPerSegment)
-        {
-            if (busStop != null) totalBusStops++;
-        }
-
-        // Muestra la informacion en la consola
-        Debug.Log($"Road Segments: {roadSegments.Count}, Total Obstacles: {totalObstacles}, Total Bus Stops: {totalBusStops}, Ground Y: {roadSegmentGroundY}");
-    }
-
     // Metodo publico para cambiar la dificultad dinamicamente
     public void SetDifficulty(int maxObstacles, float safeDistance)
     {
@@ -453,10 +440,10 @@ public class InfiniteRoadGenerator : MonoBehaviour
         obstacleSafeDistance = safeDistance;
     }
 
-    // Metodo publico para cambiar la frecuencia de paradas
-    public void SetBusStopFrequency(float frequency)
+    // Metodo publico para cambiar el intervalo de paradas
+    public void SetBusStopInterval(int interval)
     {
-        busStopFrequency = Mathf.Clamp01(frequency); // Entre 0 y 1
+        busStopInterval = Mathf.Max(1, interval); // Minimo 1 segmento
     }
 
     // Metodo publico para cambiar la distancia lateral de las paradas

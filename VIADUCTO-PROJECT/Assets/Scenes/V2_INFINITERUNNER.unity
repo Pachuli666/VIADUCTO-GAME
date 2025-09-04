@@ -238,7 +238,7 @@ MonoBehaviour:
   obstacleSafeDistance: 3
   minObstacleSpacing: 3
   busStopPrefab: {fileID: 2935444653652789351, guid: c6d335b0ecaa3a54f82032fe32e9a567, type: 3}
-  busStopFrequency: 0.25
+  busStopInterval: 5
   busStopOffsetZ: 2.5
   busStopSafeDistance: 10
 --- !u!1 &329992632
