@@ -381,9 +381,9 @@ MonoBehaviour:
   player: {fileID: 329992633}
   maxRoadSegments: 3
   laneWidth: 2
-  maxObstaclesPerSegment: 10
-  obstacleSafeDistance: 3
-  minObstacleSpacing: 3
+  maxObstaclesPerSegment: 8
+  obstacleSafeDistance: 6
+  minObstacleSpacing: 6
   obstaclePrefabs:
   - {fileID: 803428272589916860, guid: 415e840fcb9cd2a42bf099d601945c80, type: 3}
   - {fileID: 9144800497275750075, guid: f4239dbc62b0ddc4eb20e2db59e6d2a0, type: 3}
@@ -433,18 +433,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 329992632}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef657d12b62734443aee02f31699babc, type: 3}
+  m_Script: {fileID: 11500000, guid: be1bac5135fe34b49b230ffc9b41f468, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  routePoints:
-  - {x: 0, y: 0, z: 0}
-  startSpeed: 5
-  speedIncrease: 0.5
-  brakingForce: 2
-  stopDistance: 5
-  rotationSpeed: 5
-  turnRadius: 3
-  maxTurnAngle: 45
+  acceleration: 0.85
+  maxSpeed: 8
+  sideSpeed: 3
+  brakeForce: 5
+  minSpeed: 1
+  roadPlane: {fileID: 5474687422598203723, guid: 31c598a0ce416014c82a19453f02c40a, type: 3}
 --- !u!1 &491414168
 GameObject:
   m_ObjectHideFlags: 0
@@ -532,8 +529,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 491414168}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3296001, y: 0.3920835, z: -0.15291145, w: 0.84513456}
-  m_LocalPosition: {x: -4.15, y: 5, z: -3.5}
+  m_LocalRotation: {x: 0.33622947, y: 0.3908701, z: -0.15598702, w: 0.8425191}
+  m_LocalPosition: {x: -4.15, y: 5.16, z: -3.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -755,8 +752,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 883820464}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3296001, y: 0.3920835, z: -0.15291145, w: 0.84513456}
-  m_LocalPosition: {x: -4.15, y: 5, z: -3.5}
+  m_LocalRotation: {x: 0.33622947, y: 0.3908701, z: -0.15598702, w: 0.8425191}
+  m_LocalPosition: {x: -4.15, y: 5.16, z: -3.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -804,7 +801,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Damping: {x: 0.1, y: 0.5, z: 0.3}
-  ShoulderOffset: {x: -4.15, y: 5.5, z: -1}
+  ShoulderOffset: {x: -4.15, y: 5.66, z: -1}
   VerticalArmLength: -0.5
   CameraSide: 1
   CameraDistance: 2.5
@@ -1292,7 +1289,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1591661339
 MonoBehaviour:
   m_ObjectHideFlags: 0
