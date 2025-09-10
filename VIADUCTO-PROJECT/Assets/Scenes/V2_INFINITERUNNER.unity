@@ -391,6 +391,7 @@ MonoBehaviour:
   busStopInterval: 5
   busStopOffsetZ: 2.5
   busStopSafeDistance: 10
+  busStopClearanceDistance: 2
 --- !u!1 &329992632
 GameObject:
   m_ObjectHideFlags: 0
@@ -403,7 +404,7 @@ GameObject:
   - component: {fileID: 329992634}
   m_Layer: 0
   m_Name: PlayerBox
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -436,11 +437,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be1bac5135fe34b49b230ffc9b41f468, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  acceleration: 0.85
+  acceleration: 1
   maxSpeed: 8
-  sideSpeed: 3
-  brakeForce: 5
-  minSpeed: 1
+  sideSpeed: 4
+  brakeForce: 6
+  minSpeed: 0.1
   roadPlane: {fileID: 4114246466562567388, guid: 475c503c680c2734491b470653679002, type: 3}
   sideMargin: 0.5
 --- !u!1 &491414168

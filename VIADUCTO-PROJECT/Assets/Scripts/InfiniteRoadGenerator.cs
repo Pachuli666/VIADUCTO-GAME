@@ -12,17 +12,18 @@ public class InfiniteRoadGenerator : MonoBehaviour
     // Configuracion de obstaculos
     [Header("Obstacle Configuration")]
     [SerializeField] private float laneWidth = 3f; // Ancho entre carriles
-    [SerializeField] private int maxObstaclesPerSegment = 2; // Maximo obstaculos por segmento
-    [SerializeField] private float obstacleSafeDistance = 8f; // Distancia segura del jugador
-    [SerializeField] private float minObstacleSpacing = 2f; // Espaciado minimo entre obstaculos
+    [SerializeField] private int maxObstaclesPerSegment = 8; // Maximo obstaculos por segmento
+    [SerializeField] private float obstacleSafeDistance = 6f; // Distancia segura del jugador
+    [SerializeField] private float minObstacleSpacing = 6f; // Espaciado minimo entre obstaculos
     [SerializeField] private GameObject[] obstaclePrefabs; // Array de prefabs de obstaculos
 
     // Configuracion de paradas de autobus
     [Header("Bus Stop Configuration")]
     [SerializeField] private GameObject busStopPrefab; // Prefab de la parada
     [SerializeField] private int busStopInterval = 5; // Cada cuantos segmentos generar parada
-    [SerializeField] private float busStopOffsetZ = 4f; // Distancia lateral del centro
+    [SerializeField] private float busStopOffsetZ = 2.5f; // Distancia lateral del centro
     [SerializeField] private float busStopSafeDistance = 10f; // Distancia segura del jugador
+    [SerializeField] private float busStopClearanceDistance = 5f; // Distancia libre alrededor de paradas
 
     // Variables internas del sistema
     private float segmentLength; // Longitud de cada segmento
@@ -72,8 +73,8 @@ public class InfiniteRoadGenerator : MonoBehaviour
             {
                 // Obtiene la longitud del segmento desde sus bounds
                 segmentLength = tempRenderer.bounds.size.x;
-                // Obtiene la Y del suelo desde el punto mas bajo
-                roadSegmentGroundY = tempRenderer.bounds.min.y;
+                // Obtiene la Y del suelo desde el punto mas alto (superficie de la carretera)
+                roadSegmentGroundY = tempRenderer.bounds.max.y;
             }
             else
             {
@@ -179,8 +180,8 @@ public class InfiniteRoadGenerator : MonoBehaviour
                     lastSegment.transform.position.z // Misma Z
                 );
 
-                // Actualiza la Y del suelo
-                roadSegmentGroundY = lastRenderer.bounds.min.y;
+                // Actualiza la Y del suelo (superficie superior de la carretera)
+                roadSegmentGroundY = lastRenderer.bounds.max.y;
             }
             else
             {
@@ -210,13 +211,13 @@ public class InfiniteRoadGenerator : MonoBehaviour
         // Incrementa el contador
         segmentCount++;
 
-        // Genera obstaculos para este segmento
-        List<GameObject> segmentObstacles = GenerateObstaclesForSegment(nextSpawnPosition);
-        obstaclesPerSegment.Add(segmentObstacles);
-
-        // Genera parada de autobus si corresponde
+        // PRIMERO genera parada de autobus si corresponde
         GameObject busStop = GenerateBusStopForSegment(nextSpawnPosition);
         busStopsPerSegment.Add(busStop);
+
+        // DESPUES genera obstaculos para este segmento (evitando las paradas)
+        List<GameObject> segmentObstacles = GenerateObstaclesForSegment(nextSpawnPosition);
+        obstaclesPerSegment.Add(segmentObstacles);
     }
 
     // Genera una parada de autobus para el segmento dado
@@ -302,6 +303,60 @@ public class InfiniteRoadGenerator : MonoBehaviour
         return adjustedY;
     }
 
+    // Calcula la Y correcta para que el obstáculo toque el suelo
+    private float CalculateObstacleGroundY(GameObject obstaclePrefab)
+    {
+        if (obstaclePrefab == null) return roadSegmentGroundY;
+
+        // Crea instancia temporal para obtener dimensiones
+        GameObject tempObstacle = Instantiate(obstaclePrefab, Vector3.zero, obstaclePrefab.transform.rotation);
+        MeshRenderer obstacleRenderer = tempObstacle.GetComponent<MeshRenderer>();
+
+        float adjustedY = roadSegmentGroundY;
+
+        if (obstacleRenderer != null)
+        {
+            // Calcula cuanto esta la parte inferior por debajo del centro
+            float obstacleBottomOffset = obstacleRenderer.bounds.min.y - tempObstacle.transform.position.y;
+            // Ajusta la Y para que la parte inferior toque el suelo
+            adjustedY = roadSegmentGroundY - obstacleBottomOffset;
+        }
+        else
+        {
+            // Valor de respaldo
+            adjustedY = roadSegmentGroundY;
+        }
+
+        // Destruye la instancia temporal
+        DestroyImmediate(tempObstacle);
+
+        return adjustedY;
+    }
+
+    // Verifica si una posición está cerca de alguna parada de autobús
+    private bool IsPositionNearBusStop(Vector3 position, float clearanceDistance)
+    {
+        // Verificar paradas en segmentos actuales
+        foreach (GameObject busStop in busStopsPerSegment)
+        {
+            if (busStop != null)
+            {
+                float distance = Vector3.Distance(position, busStop.transform.position);
+                if (distance < clearanceDistance)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Sobrecarga del método para usar la distancia de clearance por defecto
+    private bool IsPositionNearBusStop(Vector3 position)
+    {
+        return IsPositionNearBusStop(position, busStopClearanceDistance);
+    }
+
     // Genera obstaculos para un segmento dado
     private List<GameObject> GenerateObstaclesForSegment(Vector3 segmentPosition)
     {
@@ -335,6 +390,10 @@ public class InfiniteRoadGenerator : MonoBehaviour
                 // Selecciona un prefab aleatorio
                 GameObject obstaclePrefab = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
 
+                // Calcula la Y correcta para que toque el suelo
+                float correctY = CalculateObstacleGroundY(obstaclePrefab);
+                obstaclePosition.y = correctY;
+
                 // Rotacion aleatoria pequena
                 Quaternion obstacleRotation = Quaternion.Euler(0, Random.Range(-5f, 5f), 0);
 
@@ -358,7 +417,7 @@ public class InfiniteRoadGenerator : MonoBehaviour
     // Busca una posicion aleatoria valida para un obstaculo
     private Vector3 GetRandomObstaclePosition(Vector3 segmentCenter, List<Vector3> occupiedPositions)
     {
-        int maxAttempts = 20;
+        int maxAttempts = 30; // Aumentamos los intentos
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
@@ -374,12 +433,18 @@ public class InfiniteRoadGenerator : MonoBehaviour
 
             Vector3 potentialPosition = new Vector3(
                 randomX,
-                segmentCenter.y + 0.22f, // Eleva ligeramente sobre el suelo
+                segmentCenter.y, // Y temporal, se ajustará después
                 laneZ
             );
 
             // Verifica que no este muy cerca del jugador
             if (IsPositionNearPlayer(potentialPosition, obstacleSafeDistance))
+            {
+                continue;
+            }
+
+            // VERIFICACIÓN CORREGIDA: Verifica que no esté frente a paradas de autobús usando la sobrecarga
+            if (IsPositionNearBusStop(potentialPosition))
             {
                 continue;
             }
@@ -450,5 +515,11 @@ public class InfiniteRoadGenerator : MonoBehaviour
     public void SetBusStopOffset(float offset)
     {
         busStopOffsetZ = Mathf.Max(0f, offset); // No valores negativos
+    }
+
+    // Método público para cambiar la distancia de clearance de paradas
+    public void SetBusStopClearanceDistance(float distance)
+    {
+        busStopClearanceDistance = Mathf.Max(0f, distance);
     }
 }
